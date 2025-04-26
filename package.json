@@ -1,0 +1,23 @@
+{
+  "name": "case",
+  "version": "1.0.0",
+  "description": "The 2025 iteration in a personal project series exploring AI agent architectures. CASE is a Python script that bridges an AI model and the command line, enabling the AI to function as a direct system interface by executing shell commands and processing their output.",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dev-kas/CASE.git"
+  },
+  "keywords": [
+    "CASE",
+    "AI"
+  ],
+  "author": "dev-kas",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/dev-kas/CASE/issues"
+  },
+  "homepage": "https://github.com/dev-kas/CASE#readme"
+}
