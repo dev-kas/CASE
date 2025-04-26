@@ -4,7 +4,8 @@
   "description": "The 2025 iteration in a personal project series exploring AI agent architectures. CASE is a Python script that bridges an AI model and the command line, enabling the AI to function as a direct system interface by executing shell commands and processing their output.",
   "main": "src/index.js",
   "scripts": {
-    "start": "node ."
+    "init": "python3 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt",
+    "start": "concurrently --kill-others \"node src/index.js\" \"wait-on http://localhost:5500 && .venv/bin/python src/main.py\""
   },
   "repository": {
     "type": "git",
@@ -19,5 +20,12 @@
   "bugs": {
     "url": "https://github.com/dev-kas/CASE/issues"
   },
-  "homepage": "https://github.com/dev-kas/CASE#readme"
+  "homepage": "https://github.com/dev-kas/CASE#readme",
+  "dependencies": {
+    "@google/genai": "^0.10.0",
+    "concurrently": "^9.1.2",
+    "dotenv": "^16.5.0",
+    "mime": "^4.0.7",
+    "socket.io": "^4.8.1"
+  }
 }
