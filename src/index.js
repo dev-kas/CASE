@@ -1,9 +1,11 @@
 const { GoogleGenAI, Type } = require('@google/genai');
 const socketIO = require('socket.io');
 const { createServer } = require('http');
+const removeMD = require('remove-markdown');
 const http_server = createServer();
 const io = socketIO(http_server);
 const tools = require('./tools');
+const { writeFileSync } = require('fs');
 require('dotenv').config();
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const SHELL = "/bin/zsh";
@@ -49,6 +51,10 @@ const tools_definitions = [
                         },
                     }
                 }
+            },
+            {
+                name: "end_chat",
+                description: "Ends the current conversation session. Use when the user explicitly indicates they want to finish or says a farewell"
             }
         ]
     }
@@ -61,10 +67,17 @@ const config = {
 }
 
 const model = "gemini-2.0-flash";
-const contents = [];
+let contents = [];
+
+try {
+    contents = JSON.parse(readFileSync("./conversation.json"));
+} catch (e) {
+    contents = [];
+}
 
 function sendMessage(content) {
     contents.push(content);
+    writeFileSync("./conversation.json", JSON.stringify(contents, null, 4));
 }
 
 async function chat(message) {
@@ -79,59 +92,6 @@ async function chat(message) {
     return contents[contents.length - 1];
 }
 
-// (async()=>{
-//     const resp = await chat({
-//         role: "user",
-//         parts: [{text: "tell me the contents of documents folder"}]
-//     });
-
-//     debugger;
-
-//     await chat({
-//         role: "user",
-//         parts: [
-//             {
-//                 functionResponse: {
-//                     name: "execute_shell_command",
-//                     response: {
-//                         output: "Office\\ Stuff Food\\ Recipes Projects Family\\ Photos"
-//                     }
-//                 }
-//             }
-//         ]
-//     });
-
-//     debugger;
-
-//     await chat({
-//         role: "user",
-//         parts: [{text: "i have an app.log file inside the Jarvis project. can you fetch me all the places where a warning occured?"}]
-//     })
-
-//     debugger;
-
-//     await chat({
-//         role: "user",
-//         parts: [
-//             {
-//                 functionResponse: {
-//                     name: "execute_shell_command",
-//                     response: {
-//                         output: `Warning: Disk space is running low.\nWarning: API call timed out.\nWarning: AI Services malfunctioned. All services have restarted\nService_2 Warning: Unplanned shutdown signal received.`
-//                     }
-//                 }
-//             }
-//         ]
-//     });
-
-//     console.dir(contents, {depth: null});
-// })();
-
-// (async ()=>{
-//     await speak("Speech synthesis initiated. Now we're speaking!");
-// })();
-
-// socket io management
 let client = null;
 
 io.on('connection', async (socket) => {
@@ -143,10 +103,8 @@ io.on('connection', async (socket) => {
     client = socket;
 
     let isRunning = true;
-    let i = 0;
     await speak("You can now start speaking.");
     while (isRunning) {
-        i++;
         const response = await listen();
         await converse(await chat({
             role: "user",
@@ -156,9 +114,6 @@ io.on('connection', async (socket) => {
                 }
             ]
         }));
-        // if (i >= 5) {
-            isRunning = false;
-        // }
     }
         
     async function converse(res) {
@@ -170,7 +125,6 @@ io.on('connection', async (socket) => {
                 const { name, args } = part.functionCall;
                 args.shell = SHELL;
                 if (tools[name]) {
-                    console.log()
                     const output = await tools[name].activate(args);
                     console.log(output);
                     await converse(await chat({
@@ -179,6 +133,8 @@ io.on('connection', async (socket) => {
                             functionResponse: { name, response: { output } }
                         }]
                     }));
+                } else if (name === "end_chat") {
+                    isRunning = false;
                 } else {
                     console.error(`Tool ${name} not found`);
                 }
@@ -190,6 +146,7 @@ io.on('connection', async (socket) => {
 function speak(text, model = "tts_models/en/vctk/vits", speaker = "p233") {
     return new Promise((resolve, reject) => {
         if (client) {
+            text = removeMD(text);
             client.emit('speak', { text, model, speaker }, (success, message) => {
                 if (success) {
                     resolve(message);

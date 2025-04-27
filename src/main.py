@@ -61,17 +61,17 @@ def butter_lowpass_filter(data, cutoff, fs, order=5):
 
 @socket.event
 def listen(data):
-    # thr = data["threshold"] if "threshold" in data else THRESHOLD
-    # fs = data["sample_rate"] if "sample_rate" in data else SAMPLE_RATE
-    # st = data["silence_tolerance"] if "silence_tolerance" in data else SILENCE_TOLERANCE
-    # listen_internal(threshold=thr, fs=fs, silence_tolerance=st)
-    # result = stt_model.transcribe("recording.wav")
-    # try:
-    #     os.remove("recording.wav")
-    # except FileNotFoundError:
-    #     pass
+    thr = data["threshold"] if "threshold" in data else THRESHOLD
+    fs = data["sample_rate"] if "sample_rate" in data else SAMPLE_RATE
+    st = data["silence_tolerance"] if "silence_tolerance" in data else SILENCE_TOLERANCE
+    listen_internal(threshold=thr, fs=fs, silence_tolerance=st)
+    result = stt_model.transcribe("recording.wav")
+    try:
+        os.remove("recording.wav")
+    except FileNotFoundError:
+        pass
     
-    return True, {"text": "i have a html file located at ~/Documents/cake_recipe.html and i want you to first read and understand it by using the cat command, then use internal css to make it user-friendly, like making the headings red, and the subheadings yellow, and the background a little good contrast for all of those things, etc. then use the `>` operator in zsh to save it to the file. got it? do it."} #result
+    return True, result
 
 def listen_internal(threshold=THRESHOLD, fs=SAMPLE_RATE, silence_tolerance=SILENCE_TOLERANCE):
     print("Listening for voice...")
