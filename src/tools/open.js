@@ -6,5 +6,5 @@ module.exports.activate = async function (options, config) {
     console.log("OPENING: ", path);
     open(path);
 
-    return "";
+    return "OPENED SUCCESSFULLY";
 }

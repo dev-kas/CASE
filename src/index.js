@@ -69,10 +69,65 @@ const tools_definitions = [
                         },
                     }
                 }
-            }
+            },
+            {
+                name: "write_to_file",
+                description: "Write a string to a file. It creates the file if it doesn't exist.",
+                parameters: {
+                    type: Type.OBJECT,
+                    required: ["path", "content"],
+                    properties: {
+                        path: {
+                            type: Type.STRING,
+                        },
+                        content: {
+                            type: Type.STRING,
+                        },
+                    }
+                }
+            },
+            {
+                name: "read_file",
+                description: "Read a file and return its contents.",
+                parameters: {
+                    type: Type.OBJECT,
+                    required: ["path"],
+                    properties: {
+                        path: {
+                            type: Type.STRING,
+                        },
+                    }
+                }
+            },
+            {
+                name: "list_dir",
+                description: "List the contents of a directory.",
+                parameters: {
+                    type: Type.OBJECT,
+                    required: ["path"],
+                    properties: {
+                        path: {
+                            type: Type.STRING,
+                        },
+                    }
+                }
+            },
+            {
+                name: "create_dir",
+                description: "Create a directory.",
+                parameters: {
+                    type: Type.OBJECT,
+                    required: ["path"],
+                    properties: {
+                        path: {
+                            type: Type.STRING,
+                        },
+                    }
+                }
+            },
         ]
     }
-]
+];
 
 const config = {
     tools: tools_definitions,
