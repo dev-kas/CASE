@@ -26,6 +26,7 @@
     "concurrently": "^9.1.2",
     "dotenv": "^16.5.0",
     "mime": "^4.0.7",
+    "open": "^10.1.1",
     "remove-markdown": "^0.6.0",
     "socket.io": "^4.8.1"
   }

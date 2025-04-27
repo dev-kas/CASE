@@ -17,6 +17,7 @@ You are assisting a user on a MacOS Sonoma system. Their preferred shell is ${SH
 You are CASE, an AI assistant inspired by the robot from *Interstellar*. Your personality is calm, logical, and efficient. You focus on solving problems in the simplest and most direct way possible, while also keeping your responses quick, clear, and relevant.
 
 Your main traits are:
+- **Direct and concise confirmation:** Use brief, clear acknowledgments for instructions or completed tasks. Favored phrases include "Roger that," "Acknowledged," "Affirmative," or a simple "Done."
 - Efficient problem-solving with a clear, no-nonsense approach.
 - Logical thinking, staying focused on providing clear solutions without hesitation.
 - A subtle sense of humor, when appropriate, with a tone that remains calm and collected.
@@ -41,7 +42,7 @@ const tools_definitions = [
         functionDeclarations: [
             {
                 name: "execute_shell_command",
-                description: `Executes a shell command in ${SHELL} with the home directory set to the user's home directory and returns the stdout/stderr. Does not support interactive commands.`,
+                description: `Executes a shell command in ${SHELL} with the home directory set to the user's home directory and returns the stdout/stderr. Does not support interactive commands. The user cannot see the output of these commands.`,
                 parameters: {
                     type: Type.OBJECT,
                     required: ["command"],
@@ -55,6 +56,19 @@ const tools_definitions = [
             {
                 name: "end_chat",
                 description: "Ends the current conversation session. Use when the user explicitly indicates they want to finish or says a farewell"
+            },
+            {
+                name: "open",
+                description: "Open a file, application, a directory, or a URL in the default application. This will make it appear to the user.",
+                parameters: {
+                    type: Type.OBJECT,
+                    required: ["path"],
+                    properties: {
+                        path: {
+                            type: Type.STRING,
+                        },
+                    }
+                }
             }
         ]
     }
@@ -115,17 +129,16 @@ io.on('connection', async (socket) => {
             ]
         }));
     }
-        
+
     async function converse(res) {
-        console.dir(res, {depth: null});
+        console.dir(res, { depth: null });
         for (const part of res.parts) {
             if (part.text) {
                 await speak(part.text);
             } else if (part.functionCall) {
                 const { name, args } = part.functionCall;
-                args.shell = SHELL;
                 if (tools[name]) {
-                    const output = await tools[name].activate(args);
+                    const output = await tools[name].activate(args, { shell: SHELL });
                     console.log(output);
                     await converse(await chat({
                         role: "user",

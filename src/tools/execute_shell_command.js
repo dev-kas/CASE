@@ -2,13 +2,13 @@ const { spawn } = require('child_process');
 
 module.exports = {};
 
-module.exports.activate = async function (options) {
+module.exports.activate = async function (options, config) {
     const command = options.command || ""; // TODO: Moderate command
 
     console.log("EXECUTING COMMAND: ", command);
 
 
-    const shell = options.shell || "/bin/zsh";
+    const shell = config.shell || "/bin/zsh";
     const proc = spawn(command, {
         env: process.env,
         shell: true,
