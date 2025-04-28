@@ -5,7 +5,7 @@ const removeMD = require('remove-markdown');
 const http_server = createServer();
 const io = socketIO(http_server);
 const tools = require('./tools');
-const { writeFileSync } = require('fs');
+const { writeFileSync, readFileSync } = require('fs');
 require('dotenv').config();
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const SHELL = "/bin/zsh";
@@ -120,6 +120,19 @@ const tools_definitions = [
                     required: ["path"],
                     properties: {
                         path: {
+                            type: Type.STRING,
+                        },
+                    }
+                }
+            },
+            {
+                name: "type_text",
+                description: "Send a stream of keyboard inputs related to writing/typing the given text. This will make it write the text on the screen.",
+                parameters: {
+                    type: Type.OBJECT,
+                    required: ["text"],
+                    properties: {
+                        text: {
                             type: Type.STRING,
                         },
                     }

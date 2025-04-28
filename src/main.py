@@ -7,15 +7,19 @@ import socketio
 import whisper
 import time
 from scipy.io.wavfile import write
+import spacy
 
 socket = socketio.Client(reconnection_attempts=9999999, reconnection=True, reconnection_delay=5, reconnection_delay_max=50)
-device = "cpu"
 models = {}
 stt_model = whisper.load_model("base")
+spacy_nlp = spacy.load("en_core_web_sm") # python -m spacy download en_core_web_sm
+
+device = "cpu"
 THRESHOLD = 3.6
 SAMPLE_RATE = 16000
 CHANNELS = 1
 SILENCE_TOLERANCE = 3
+
 
 # if torch.backends.mps.is_available():
 #     device = "mps"
@@ -36,21 +40,30 @@ def speak(data):
     model = data["model"]
     speaker = data["speaker"]
 
-    try:
-        if model not in models:
-            models[model] = TTS(model_name=model).to(device)
-        tts = models[model]
-        wav = tts.tts(text=text, speaker=speaker)
-        wav = butter_lowpass_filter(wav, cutoff=8000, fs=tts.synthesizer.output_sample_rate)
-        wav = np.clip(wav, -1.0, 1.0)
-        wav = wav / np.max(np.abs(wav))
-        sd.play(wav, samplerate=tts.synthesizer.output_sample_rate)
-        sd.wait()
-        print("Speech generated successfully")
-        return True, "Speech generated successfully"
-    except Exception as e:
-        print(f"Error generating speech: {e}")
-        return False, f"Error generating speech: {e}"
+    chunked_text = spacy_nlp(text).sents
+    chunked_text = [chunk.text for chunk in chunked_text]
+
+    result = True, "Speech generated successfully"
+
+    for chunk in chunked_text:
+        try:
+            if model not in models:
+                models[model] = TTS(model_name=model).to(device)
+            tts = models[model]
+            wav = tts.tts(text=chunk, speaker=speaker)
+            wav = butter_lowpass_filter(wav, cutoff=8000, fs=tts.synthesizer.output_sample_rate)
+            wav = np.clip(wav, -1.0, 1.0)
+            wav = wav / np.max(np.abs(wav))
+            sd.play(wav, samplerate=tts.synthesizer.output_sample_rate)
+            sd.wait()
+        except Exception as e:
+            print(f"Error generating speech: {e}")
+            result = False, f"Error generating speech: {e}"
+            break
+    
+    print("Speech generated successfully")
+    return result
+
 
 def butter_lowpass_filter(data, cutoff, fs, order=5):
     nyq = 0.5 * fs
