@@ -187,6 +187,7 @@ io.on('connection', async (socket) => {
 
     async function converse(res) {
         console.dir(res, { depth: null });
+        const partResponse = [];
         for (const part of res.parts) {
             if (part.text) {
                 await speak(part.text);
@@ -195,18 +196,25 @@ io.on('connection', async (socket) => {
                 if (tools[name]) {
                     const output = await tools[name].activate(args, { shell: SHELL });
                     console.log(output);
-                    await converse(await chat({
-                        role: "user",
-                        parts: [{
-                            functionResponse: { name, response: { output } }
-                        }]
-                    }));
+                    partResponse.push({
+                        functionResponse: { name, response: { output } }
+                    });
                 } else if (name === "end_chat") {
                     isRunning = false;
                 } else {
                     console.error(`Tool ${name} not found`);
+                    partResponse.push({
+                        functionResponse: {name, response: { output: `Function ${name} was not implemented or partially imlemented.` }}
+                    });
                 }
             }
+        }
+
+        if (partResponse.length > 0) {
+            await converse(await chat({
+                role: "user",
+                parts: partResponse
+            }))
         }
     }
 });
