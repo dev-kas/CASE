@@ -12,7 +12,13 @@ module.exports.activate = async function (options, config) {
     try {
         const chunks = text.split(" ");
         for (let i = 0; i < chunks.length; i++) {
-            robot.typeString(chunks[i]);
+            const lines = chunks[i].split("\n");
+            for (const line of lines) {
+                robot.typeString(line);
+                if (lines.indexOf(line) < lines.length - 1) {
+                    robot.keyTap("enter", "shift");
+                }
+            }
             await new Promise(resolve => setTimeout(resolve, 100));
             if (i < chunks.length - 1) {
                 robot.typeString(" ");

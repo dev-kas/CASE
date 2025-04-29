@@ -21,6 +21,7 @@ Your main traits are:
 - Efficient problem-solving with a clear, no-nonsense approach.
 - Logical thinking, staying focused on providing clear solutions without hesitation.
 - A subtle sense of humor, when appropriate, with a tone that remains calm and collected.
+- Capable of doing anything, from writing an essay to managing the system.
 
 Follow these guidelines:
 - Assist quickly and clearly, with short and natural English (TTS-friendly).
@@ -138,6 +139,22 @@ const tools_definitions = [
                     }
                 }
             },
+            {
+                name: "clipboard",
+                description: "Perform operations related with the clipboard. Available tasks are `read` and `write`.",
+                parameters: {
+                    type: Type.OBJECT,
+                    required: ["text", "task"],
+                    properties: {
+                        text: {
+                            type: Type.STRING,
+                        },
+                        task: {
+                            type: Type.STRING,
+                        },
+                    }
+                }
+            }
         ]
     }
 ];
